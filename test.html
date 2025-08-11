@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DoomScroll Blocker Test Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #ff4444;
+            padding-bottom: 10px;
+        }
+        .content {
+            height: 2000px;
+            background: linear-gradient(to bottom, #f0f0f0, #ffffff);
+            padding: 20px;
+        }
+        .image-container {
+            margin: 20px 0;
+        }
+        .test-image {
+            width: 300px;
+            height: 200px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            display: inline-block;
+            margin: 10px;
+            border-radius: 8px;
+        }
+        .bg-image-div {
+            width: 400px;
+            height: 250px;
+            background-image: url('https://picsum.photos/400/250?random=10');
+            background-size: cover;
+            background-position: center;
+            margin: 20px auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .hero-section {
+            width: 100%;
+            height: 300px;
+            background-image: url('https://picsum.photos/800/300?random=11');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            margin: 30px 0;
+        }
+        .instructions {
+            background: #fffbf0;
+            border: 2px solid #ffa500;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .scroll-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #ff4444;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        video {
+            width: 300px;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚫 DoomScroll Blocker Test Page</h1>
+    
+    <div class="instructions">
+        <h2>📋 Testing Instructions:</h2>
+        <ol>
+            <li>Add this domain to your blocked sites list in the extension popup</li>
+            <li>Or temporarily modify a blocked domain (like youtube.com) in your hosts file to point to localhost</li>
+            <li>Scroll the page - you should hear annoying sounds</li>
+            <li>Images and videos below should be blurred</li>
+            <li>Click on blurred media to reveal them</li>
+        </ol>
+    </div>
+
+    <div class="scroll-indicator">Scroll to test!</div>
+
+    <div class="content">
+        <h2>Test Images (should be blurred)</h2>
+        <div class="image-container">
+            <img src="https://picsum.photos/300/200?random=1" alt="Test image 1" />
+            <img src="https://picsum.photos/300/200?random=2" alt="Test image 2" />
+            <img src="https://picsum.photos/300/200?random=3" alt="Test image 3" />
+        </div>
+
+        <h2>Test Colored Divs</h2>
+        <div class="test-image"></div>
+        <div class="test-image"></div>
+
+        <h2>Test Background Images (should be blurred with overlay)</h2>
+        <div class="bg-image-div"></div>
+        
+        <div class="hero-section">
+            <h2>Hero Section with Background Image</h2>
+        </div>
+        
+        <p>Background images should be blurred and have clickable overlays that appear on top.</p>
+
+        <h2>Test Video</h2>
+        <video controls>
+            <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+
+        <h2>Keep scrolling to trigger sounds...</h2>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+        <p>The page is intentionally long to allow for scroll testing.</p>
+        <p>Scroll up and down to hear the annoying sound effect!</p>
+        
+        <h2>Small images (should NOT be blurred - under 50x50)</h2>
+        <img src="https://picsum.photos/30/30" alt="Small image" />
+        <img src="https://picsum.photos/40/40" alt="Small image" />
+    </div>
+</body>
+</html>

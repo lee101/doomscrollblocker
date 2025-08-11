@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>DoomScroll Blocker</h1>
+    
+    <div class="toggle-section">
+      <label class="switch">
+        <input type="checkbox" id="enabled">
+        <span class="slider"></span>
+      </label>
+      <span id="status">Enabled</span>
+    </div>
+
+    <div class="section">
+      <h2>Blocked Sites</h2>
+      <div id="sitesList"></div>
+      <div class="add-site">
+        <input type="text" id="newSite" placeholder="Add domain (e.g., example.com)">
+        <button id="addSite">Add</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Media Blocking</h2>
+      <div class="toggle-section">
+        <label class="switch">
+          <input type="checkbox" id="blurMedia">
+          <span class="slider"></span>
+        </label>
+        <span id="mediaStatus">Blur Images & Videos</span>
+      </div>
+      <p class="description">Blurs all images and videos until you click them</p>
+    </div>
+
+    <div class="section">
+      <h2>Sound Settings</h2>
+      <div class="setting">
+        <label for="volume">Volume:</label>
+        <input type="range" id="volume" min="0" max="100" value="50">
+        <span id="volumeValue">50%</span>
+      </div>
+      <div class="setting">
+        <label for="delay">Delay (ms):</label>
+        <input type="number" id="delay" min="0" max="5000" value="100">
+      </div>
+      <button id="testSound">Test Sound</button>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
