@@ -1,17 +1,18 @@
-const defaultSites = [
-  'youtube.com',
-  'x.com',
-  'twitter.com',
-  'facebook.com',
-  'instagram.com',
-  'tiktok.com',
-  'reddit.com',
-  'linkedin.com'
+const mainSocialNetworks = [
+  { domain: 'youtube.com', name: 'YouTube', icon: '📺' },
+  { domain: 'x.com', name: 'X (Twitter)', icon: '🐦' },
+  { domain: 'twitter.com', name: 'Twitter', icon: '🐦' },
+  { domain: 'facebook.com', name: 'Facebook', icon: '👤' },
+  { domain: 'instagram.com', name: 'Instagram', icon: '📷' },
+  { domain: 'tiktok.com', name: 'TikTok', icon: '🎵' },
+  { domain: 'reddit.com', name: 'Reddit', icon: '🤖' },
+  { domain: 'linkedin.com', name: 'LinkedIn', icon: '💼' }
 ];
 
 let settings = {
   enabled: true,
-  sites: defaultSites,
+  sites: mainSocialNetworks.map(s => s.domain),
+  customSites: [],
   volume: 50,
   delay: 100,
   blurMedia: true
@@ -20,6 +21,11 @@ let settings = {
 async function loadSettings() {
   const stored = await chrome.storage.sync.get(['settings']);
   if (stored.settings) {
+    if (stored.settings.sites && !stored.settings.customSites) {
+      const mainDomains = mainSocialNetworks.map(s => s.domain);
+      stored.settings.customSites = stored.settings.sites.filter(s => !mainDomains.includes(s));
+      stored.settings.sites = stored.settings.sites.filter(s => mainDomains.includes(s));
+    }
     settings = { ...settings, ...stored.settings };
   } else {
     await saveSettings();
@@ -32,6 +38,10 @@ async function saveSettings() {
   chrome.runtime.sendMessage({ type: 'settingsUpdated', settings });
 }
 
+function getAllBlockedSites() {
+  return [...settings.sites, ...settings.customSites];
+}
+
 function updateUI() {
   document.getElementById('enabled').checked = settings.enabled;
   document.getElementById('status').textContent = settings.enabled ? 'Enabled' : 'Disabled';
@@ -40,14 +50,79 @@ function updateUI() {
   document.getElementById('delay').value = settings.delay;
   document.getElementById('blurMedia').checked = settings.blurMedia !== false;
   
-  renderSitesList();
+  renderMainSites();
+  renderCustomSites();
 }
 
-function renderSitesList() {
-  const container = document.getElementById('sitesList');
+function renderMainSites() {
+  const container = document.getElementById('mainSitesList');
   container.innerHTML = '';
   
-  settings.sites.forEach(site => {
+  mainSocialNetworks.forEach(network => {
+    const siteDiv = document.createElement('div');
+    siteDiv.className = 'main-site-item';
+    
+    const leftSection = document.createElement('div');
+    leftSection.className = 'site-info';
+    
+    const icon = document.createElement('span');
+    icon.className = 'site-icon';
+    icon.textContent = network.icon;
+    
+    const siteName = document.createElement('span');
+    siteName.className = 'site-name';
+    siteName.textContent = network.name;
+    
+    const domainSpan = document.createElement('span');
+    domainSpan.className = 'site-domain';
+    domainSpan.textContent = `(${network.domain})`;
+    
+    leftSection.appendChild(icon);
+    leftSection.appendChild(siteName);
+    leftSection.appendChild(domainSpan);
+    
+    const toggleSwitch = document.createElement('label');
+    toggleSwitch.className = 'mini-switch';
+    
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.checked = settings.sites.includes(network.domain);
+    checkbox.addEventListener('change', (e) => {
+      if (e.target.checked) {
+        if (!settings.sites.includes(network.domain)) {
+          settings.sites.push(network.domain);
+        }
+      } else {
+        settings.sites = settings.sites.filter(s => s !== network.domain);
+      }
+      saveSettings();
+    });
+    
+    const slider = document.createElement('span');
+    slider.className = 'mini-slider';
+    
+    toggleSwitch.appendChild(checkbox);
+    toggleSwitch.appendChild(slider);
+    
+    siteDiv.appendChild(leftSection);
+    siteDiv.appendChild(toggleSwitch);
+    container.appendChild(siteDiv);
+  });
+}
+
+function renderCustomSites() {
+  const container = document.getElementById('customSitesList');
+  container.innerHTML = '';
+  
+  if (settings.customSites.length === 0) {
+    const emptyMsg = document.createElement('div');
+    emptyMsg.className = 'empty-message';
+    emptyMsg.textContent = 'No custom sites added yet';
+    container.appendChild(emptyMsg);
+    return;
+  }
+  
+  settings.customSites.forEach(site => {
     const siteDiv = document.createElement('div');
     siteDiv.className = 'site-item';
     
@@ -57,7 +132,7 @@ function renderSitesList() {
     const removeBtn = document.createElement('button');
     removeBtn.textContent = '×';
     removeBtn.className = 'remove-btn';
-    removeBtn.onclick = () => removeSite(site);
+    removeBtn.onclick = () => removeCustomSite(site);
     
     siteDiv.appendChild(siteName);
     siteDiv.appendChild(removeBtn);
@@ -65,10 +140,10 @@ function renderSitesList() {
   });
 }
 
-function removeSite(site) {
-  settings.sites = settings.sites.filter(s => s !== site);
+function removeCustomSite(site) {
+  settings.customSites = settings.customSites.filter(s => s !== site);
   saveSettings();
-  renderSitesList();
+  renderCustomSites();
 }
 
 function addSite() {
@@ -79,10 +154,17 @@ function addSite() {
   
   site = site.replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/$/, '');
   
-  if (!settings.sites.includes(site)) {
-    settings.sites.push(site);
+  const mainDomains = mainSocialNetworks.map(s => s.domain);
+  if (mainDomains.includes(site)) {
+    alert('This is a main social network. Use the toggle above to enable/disable it.');
+    input.value = '';
+    return;
+  }
+  
+  if (!settings.customSites.includes(site)) {
+    settings.customSites.push(site);
     saveSettings();
-    renderSitesList();
+    renderCustomSites();
   }
   
   input.value = '';

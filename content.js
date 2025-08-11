@@ -16,12 +16,13 @@ async function loadSettings() {
     settings = stored.settings;
     
     const currentDomain = window.location.hostname.replace(/^www\./, '');
-    const isBlocked = settings.sites && settings.sites.some(site => 
+    const allBlockedSites = [...(settings.sites || []), ...(settings.customSites || [])];
+    const isBlocked = allBlockedSites.some(site => 
       currentDomain.includes(site.replace(/^www\./, ''))
     );
     
     if (!isBlocked) {
-      console.log('DoomScroll Blocker: Site not in block list');
+      // Site not in block list
       return false;
     }
   }
@@ -47,12 +48,12 @@ function playAnnoyingSound() {
   audio.volume = Math.min(settings.volume / 100 * 1.5, 1.0);
   audio.currentTime = 0;
   
-  audio.play().catch(err => console.log('Audio play failed:', err));
+  audio.play().catch(err => {});
   
   setTimeout(() => {
     const audio2 = new Audio(chrome.runtime.getURL('annoying.mp3'));
     audio2.volume = Math.min(settings.volume / 100 * 1.5, 1.0);
-    audio2.play().catch(err => console.log('Second audio play failed:', err));
+    audio2.play().catch(err => {});
   }, 250);
 }
 
@@ -168,6 +169,9 @@ function processAllMedia() {
     return;
   }
   
+  // Check if we're on YouTube
+  const isYouTube = window.location.hostname.includes('youtube.com');
+  
   document.querySelectorAll('img').forEach(img => {
     if (img.width > 50 && img.height > 50) {
       blurMedia(img);
@@ -175,6 +179,14 @@ function processAllMedia() {
   });
   
   document.querySelectorAll('video').forEach(video => {
+    // Skip YouTube's main video player to prevent lag
+    if (isYouTube && (video.closest('#movie_player') || video.closest('.html5-video-container'))) {
+      processedMedia.add(video); // Mark as processed without blurring
+      return;
+    }
+    
+    if (processedMedia.has(video)) return;
+    
     blurMedia(video);
     video.pause();
     video.addEventListener('click', function(e) {
