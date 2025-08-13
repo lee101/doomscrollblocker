@@ -1,4 +1,6 @@
-git clone this and load unpacked.
+git clone git@github.com:lee101/doomscrollblocker.git 
+
+and load unpacked into your chrome browser.
 
 makes annnoying grating sound on scroll and blocks images on socials until u click.
 
