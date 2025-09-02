@@ -138,6 +138,20 @@ function blurMedia(element) {
   if (!settings.blurMedia) return;
   
   processedMedia.add(element);
+  
+  // Block autoplay for videos
+  if (element.tagName === 'VIDEO') {
+    element.autoplay = false;
+    element.muted = true; // Browsers often require muted for autoplay
+    if (element.getAttribute('autoplay') !== null) {
+      element.removeAttribute('autoplay');
+    }
+    // Pause any currently playing video
+    if (!element.paused) {
+      element.pause();
+    }
+  }
+  
   element.classList.add('doomscroll-blur');
   element.addEventListener('click', handleMediaClick, { once: true });
   
@@ -166,6 +180,14 @@ function processAllMedia() {
     
     processedMedia = new WeakSet();
     backgroundOverlays.clear();
+    
+    // Still block autoplay even when blur is disabled
+    document.querySelectorAll('video').forEach(video => {
+      video.autoplay = false;
+      if (video.getAttribute('autoplay') !== null) {
+        video.removeAttribute('autoplay');
+      }
+    });
     return;
   }
   
@@ -182,22 +204,37 @@ function processAllMedia() {
     // Skip YouTube's main video player to prevent lag
     if (isYouTube && (video.closest('#movie_player') || video.closest('.html5-video-container'))) {
       processedMedia.add(video); // Mark as processed without blurring
+      // Still block autoplay on YouTube videos
+      video.autoplay = false;
+      if (video.getAttribute('autoplay') !== null) {
+        video.removeAttribute('autoplay');
+      }
       return;
     }
     
     if (processedMedia.has(video)) return;
     
+    // Block autoplay for all videos (even if not blurred)
+    video.autoplay = false;
+    if (video.getAttribute('autoplay') !== null) {
+      video.removeAttribute('autoplay');
+    }
+    
     blurMedia(video);
-    video.pause();
+    
+    // Enhanced video click handler that preserves normal video controls
     video.addEventListener('click', function(e) {
-      if (!this.classList.contains('doomscroll-blur')) {
-        if (this.paused) {
-          this.play();
-        } else {
-          this.pause();
-        }
+      if (this.classList.contains('doomscroll-blur')) {
+        // First click removes blur
+        e.preventDefault();
+        e.stopPropagation();
+        this.classList.remove('doomscroll-blur');
+        this.removeEventListener('click', handleMediaClick);
+      } else {
+        // Subsequent clicks behave normally (play/pause)
+        // Don't interfere with default video controls
       }
-    });
+    }, true); // Use capture to handle before other handlers
   });
   
   document.querySelectorAll('picture, svg, canvas').forEach(media => {
@@ -223,9 +260,25 @@ function processAllMedia() {
   updateOverlayPositions();
 }
 
+function blockAutoplayGlobally() {
+  // Block autoplay on all existing videos
+  document.querySelectorAll('video').forEach(video => {
+    video.autoplay = false;
+    if (video.getAttribute('autoplay') !== null) {
+      video.removeAttribute('autoplay');
+    }
+    if (!video.paused && !video.closest('#movie_player') && !video.closest('.html5-video-container')) {
+      video.pause();
+    }
+  });
+}
+
 async function init() {
   const shouldRun = await loadSettings();
   if (!shouldRun) return;
+  
+  // Block autoplay immediately on page load
+  blockAutoplayGlobally();
   
   window.addEventListener('scroll', handleScroll, { passive: true });
   window.addEventListener('wheel', handleWheel, { passive: true });
@@ -246,6 +299,8 @@ async function init() {
       }
     });
     
+    // Block autoplay on newly added videos
+    blockAutoplayGlobally();
     processAllMedia();
   });
   
@@ -253,10 +308,11 @@ async function init() {
     childList: true, 
     subtree: true,
     attributes: true,
-    attributeFilter: ['src', 'style', 'class']
+    attributeFilter: ['src', 'style', 'class', 'autoplay']
   });
   
   setInterval(() => {
+    blockAutoplayGlobally();
     processAllMedia();
     updateOverlayPositions();
   }, 2000);
