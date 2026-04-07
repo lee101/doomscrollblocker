@@ -17,7 +17,8 @@ let settings = {
   delay: 100,
   blurMedia: true,
   heavyBlur: false,
-  shrinkMedia: false
+  shrinkMedia: false,
+  blockAllMedia: false
 };
 
 async function loadSettings() {
@@ -53,6 +54,7 @@ function updateUI() {
   document.getElementById('blurMedia').checked = settings.blurMedia !== false;
   document.getElementById('heavyBlur').checked = !!settings.heavyBlur;
   document.getElementById('shrinkMedia').checked = !!settings.shrinkMedia;
+  document.getElementById('blockAllMedia').checked = !!settings.blockAllMedia;
   
   renderMainSites();
   renderCustomSites();
@@ -218,6 +220,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('shrinkMedia').addEventListener('change', (e) => {
     settings.shrinkMedia = e.target.checked;
+    saveSettings();
+  });
+
+  document.getElementById('blockAllMedia').addEventListener('change', (e) => {
+    settings.blockAllMedia = e.target.checked;
     saveSettings();
   });
 });

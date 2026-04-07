@@ -4,7 +4,8 @@ let settings = {
   delay: 100,
   blurMedia: true,
   heavyBlur: false,
-  shrinkMedia: false
+  shrinkMedia: false,
+  blockAllMedia: false
 };
 
 let lastSoundTime = 0;
@@ -171,6 +172,9 @@ function blurMedia(element) {
 }
 
 function processAllMedia() {
+  if (settings.blockAllMedia) {
+    return;
+  }
   if (!settings.blurMedia) {
     document.querySelectorAll('.doomscroll-blur, .doomscroll-heavy-blur, .doomscroll-shrink').forEach(el => {
       el.classList.remove('doomscroll-blur', 'doomscroll-heavy-blur', 'doomscroll-shrink');
@@ -283,9 +287,21 @@ function blockAutoplayGlobally() {
   });
 }
 
+function applyBlockAllMedia() {
+  const root = document.documentElement;
+  if (!root) return;
+  if (settings.blockAllMedia) {
+    root.classList.add('doomscroll-block-all-media');
+  } else {
+    root.classList.remove('doomscroll-block-all-media');
+  }
+}
+
 async function init() {
   const shouldRun = await loadSettings();
   if (!shouldRun) return;
+
+  applyBlockAllMedia();
   
   // Block autoplay immediately on page load
   blockAutoplayGlobally();
@@ -338,6 +354,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       });
       processedMedia = new WeakSet();
     }
+    applyBlockAllMedia();
     processAllMedia();
   }
 });

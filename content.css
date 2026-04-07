@@ -133,3 +133,12 @@ video.doomscroll-blur::-webkit-media-controls-panel {
 .doomscroll-bg-overlay:hover::after {
   opacity: 1 !important;
 }
+
+html.doomscroll-block-all-media img,
+html.doomscroll-block-all-media video,
+html.doomscroll-block-all-media picture,
+html.doomscroll-block-all-media source,
+html.doomscroll-block-all-media object,
+html.doomscroll-block-all-media embed {
+  display: none !important;
+}

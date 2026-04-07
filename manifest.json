@@ -4,7 +4,8 @@
   "version": "1.0",
   "description": "Plays annoying sounds when you scroll on distracting websites to discourage doomscrolling",
   "permissions": [
-    "storage"
+    "storage",
+    "declarativeNetRequestWithHostAccess"
   ],
   "host_permissions": [
     "*://*.youtube.com/*",
