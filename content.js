@@ -2,7 +2,9 @@ let settings = {
   enabled: true,
   volume: 50,
   delay: 100,
-  blurMedia: true
+  blurMedia: true,
+  heavyBlur: false,
+  shrinkMedia: false
 };
 
 let lastSoundTime = 0;
@@ -80,7 +82,7 @@ function handleWheel(e) {
 
 function handleMediaClick(e) {
   const target = e.currentTarget;
-  target.classList.remove('doomscroll-blur');
+  target.classList.remove('doomscroll-blur', 'doomscroll-heavy-blur', 'doomscroll-shrink');
   target.removeEventListener('click', handleMediaClick);
 }
 
@@ -91,7 +93,7 @@ function handleBackgroundOverlayClick(e) {
   
   if (element) {
     element.style.filter = '';
-    element.classList.remove('doomscroll-bg-blurred');
+    element.classList.remove('doomscroll-bg-blurred', 'doomscroll-shrink');
   }
   
   overlay.remove();
@@ -118,6 +120,12 @@ function createBackgroundOverlay(element) {
   backgroundOverlays.set(id, overlay);
   
   element.classList.add('doomscroll-bg-blurred');
+  if (settings.heavyBlur) {
+    element.style.filter = 'blur(24px)';
+  }
+  if (settings.shrinkMedia) {
+    element.classList.add('doomscroll-shrink');
+  }
 }
 
 function updateOverlayPositions() {
@@ -152,7 +160,10 @@ function blurMedia(element) {
     }
   }
   
-  element.classList.add('doomscroll-blur');
+  element.classList.add(settings.heavyBlur ? 'doomscroll-heavy-blur' : 'doomscroll-blur');
+  if (settings.shrinkMedia) {
+    element.classList.add('doomscroll-shrink');
+  }
   element.addEventListener('click', handleMediaClick, { once: true });
   
   element.style.cursor = 'pointer';
@@ -161,8 +172,8 @@ function blurMedia(element) {
 
 function processAllMedia() {
   if (!settings.blurMedia) {
-    document.querySelectorAll('.doomscroll-blur').forEach(el => {
-      el.classList.remove('doomscroll-blur');
+    document.querySelectorAll('.doomscroll-blur, .doomscroll-heavy-blur, .doomscroll-shrink').forEach(el => {
+      el.classList.remove('doomscroll-blur', 'doomscroll-heavy-blur', 'doomscroll-shrink');
       el.removeEventListener('click', handleMediaClick);
       el.style.cursor = '';
       el.title = '';
@@ -224,11 +235,10 @@ function processAllMedia() {
     
     // Enhanced video click handler that preserves normal video controls
     video.addEventListener('click', function(e) {
-      if (this.classList.contains('doomscroll-blur')) {
-        // First click removes blur
+      if (this.classList.contains('doomscroll-blur') || this.classList.contains('doomscroll-heavy-blur')) {
         e.preventDefault();
         e.stopPropagation();
-        this.classList.remove('doomscroll-blur');
+        this.classList.remove('doomscroll-blur', 'doomscroll-heavy-blur', 'doomscroll-shrink');
         this.removeEventListener('click', handleMediaClick);
       } else {
         // Subsequent clicks behave normally (play/pause)
@@ -320,7 +330,14 @@ async function init() {
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'settingsUpdated') {
+    const oldSettings = { ...settings };
     settings = message.settings;
+    if (oldSettings.heavyBlur !== settings.heavyBlur || oldSettings.shrinkMedia !== settings.shrinkMedia) {
+      document.querySelectorAll('.doomscroll-blur, .doomscroll-heavy-blur, .doomscroll-shrink').forEach(el => {
+        el.classList.remove('doomscroll-blur', 'doomscroll-heavy-blur', 'doomscroll-shrink');
+      });
+      processedMedia = new WeakSet();
+    }
     processAllMedia();
   }
 });
