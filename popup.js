@@ -17,8 +17,11 @@ let settings = {
   delay: 100,
   blurMedia: true,
   heavyBlur: false,
+  doubleBlur: false,
   shrinkMedia: false,
-  blockAllMedia: false
+  blockAllMedia: false,
+  blockImages: false,
+  blockVideos: false
 };
 
 async function loadSettings() {
@@ -53,8 +56,11 @@ function updateUI() {
   document.getElementById('delay').value = settings.delay;
   document.getElementById('blurMedia').checked = settings.blurMedia !== false;
   document.getElementById('heavyBlur').checked = !!settings.heavyBlur;
+  document.getElementById('doubleBlur').checked = !!settings.doubleBlur;
   document.getElementById('shrinkMedia').checked = !!settings.shrinkMedia;
   document.getElementById('blockAllMedia').checked = !!settings.blockAllMedia;
+  document.getElementById('blockImages').checked = !!settings.blockImages;
+  document.getElementById('blockVideos').checked = !!settings.blockVideos;
   
   renderMainSites();
   renderCustomSites();
@@ -218,6 +224,11 @@ document.addEventListener('DOMContentLoaded', () => {
     saveSettings();
   });
 
+  document.getElementById('doubleBlur').addEventListener('change', (e) => {
+    settings.doubleBlur = e.target.checked;
+    saveSettings();
+  });
+
   document.getElementById('shrinkMedia').addEventListener('change', (e) => {
     settings.shrinkMedia = e.target.checked;
     saveSettings();
@@ -225,6 +236,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('blockAllMedia').addEventListener('change', (e) => {
     settings.blockAllMedia = e.target.checked;
+    saveSettings();
+  });
+
+  document.getElementById('blockImages').addEventListener('change', (e) => {
+    settings.blockImages = e.target.checked;
+    saveSettings();
+  });
+
+  document.getElementById('blockVideos').addEventListener('change', (e) => {
+    settings.blockVideos = e.target.checked;
     saveSettings();
   });
 });

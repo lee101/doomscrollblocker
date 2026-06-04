@@ -4,8 +4,11 @@ let settings = {
   delay: 100,
   blurMedia: true,
   heavyBlur: false,
+  doubleBlur: false,
   shrinkMedia: false,
-  blockAllMedia: false
+  blockAllMedia: false,
+  blockImages: false,
+  blockVideos: false
 };
 
 let lastSoundTime = 0;
@@ -81,9 +84,33 @@ function handleWheel(e) {
   }
 }
 
+function doubleLevels() {
+  return settings.heavyBlur ? [40, 20] : [16, 8];
+}
+
+// Returns true when fully revealed, false when it only stepped down one blur level
+function stepUnblur(target) {
+  if (settings.doubleBlur && target.dataset.doomscrollStep !== undefined) {
+    const levels = doubleLevels();
+    const step = parseInt(target.dataset.doomscrollStep, 10) + 1;
+    if (step < levels.length) {
+      target.dataset.doomscrollStep = String(step);
+      target.style.setProperty('filter', `blur(${levels[step]}px)`, 'important');
+      return false;
+    }
+  }
+  target.classList.remove('doomscroll-blur', 'doomscroll-heavy-blur', 'doomscroll-shrink');
+  target.style.removeProperty('filter');
+  delete target.dataset.doomscrollStep;
+  return true;
+}
+
 function handleMediaClick(e) {
   const target = e.currentTarget;
-  target.classList.remove('doomscroll-blur', 'doomscroll-heavy-blur', 'doomscroll-shrink');
+  if (!stepUnblur(target)) {
+    target.addEventListener('click', handleMediaClick, { once: true });
+    return;
+  }
   target.removeEventListener('click', handleMediaClick);
 }
 
@@ -162,6 +189,10 @@ function blurMedia(element) {
   }
   
   element.classList.add(settings.heavyBlur ? 'doomscroll-heavy-blur' : 'doomscroll-blur');
+  if (settings.doubleBlur) {
+    element.dataset.doomscrollStep = '0';
+    element.style.setProperty('filter', `blur(${doubleLevels()[0]}px)`, 'important');
+  }
   if (settings.shrinkMedia) {
     element.classList.add('doomscroll-shrink');
   }
@@ -242,8 +273,9 @@ function processAllMedia() {
       if (this.classList.contains('doomscroll-blur') || this.classList.contains('doomscroll-heavy-blur')) {
         e.preventDefault();
         e.stopPropagation();
-        this.classList.remove('doomscroll-blur', 'doomscroll-heavy-blur', 'doomscroll-shrink');
-        this.removeEventListener('click', handleMediaClick);
+        if (stepUnblur(this)) {
+          this.removeEventListener('click', handleMediaClick);
+        }
       } else {
         // Subsequent clicks behave normally (play/pause)
         // Don't interfere with default video controls
@@ -290,11 +322,9 @@ function blockAutoplayGlobally() {
 function applyBlockAllMedia() {
   const root = document.documentElement;
   if (!root) return;
-  if (settings.blockAllMedia) {
-    root.classList.add('doomscroll-block-all-media');
-  } else {
-    root.classList.remove('doomscroll-block-all-media');
-  }
+  root.classList.toggle('doomscroll-block-all-media', !!settings.blockAllMedia);
+  root.classList.toggle('doomscroll-block-images', !!settings.blockImages);
+  root.classList.toggle('doomscroll-block-videos', !!settings.blockVideos);
 }
 
 async function init() {
@@ -348,9 +378,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'settingsUpdated') {
     const oldSettings = { ...settings };
     settings = message.settings;
-    if (oldSettings.heavyBlur !== settings.heavyBlur || oldSettings.shrinkMedia !== settings.shrinkMedia) {
+    if (oldSettings.heavyBlur !== settings.heavyBlur || oldSettings.shrinkMedia !== settings.shrinkMedia || oldSettings.doubleBlur !== settings.doubleBlur) {
       document.querySelectorAll('.doomscroll-blur, .doomscroll-heavy-blur, .doomscroll-shrink').forEach(el => {
         el.classList.remove('doomscroll-blur', 'doomscroll-heavy-blur', 'doomscroll-shrink');
+        el.style.removeProperty('filter');
+        delete el.dataset.doomscrollStep;
       });
       processedMedia = new WeakSet();
     }

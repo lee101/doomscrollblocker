@@ -142,3 +142,16 @@ html.doomscroll-block-all-media object,
 html.doomscroll-block-all-media embed {
   display: none !important;
 }
+
+html.doomscroll-block-images img,
+html.doomscroll-block-images picture,
+html.doomscroll-block-images svg,
+html.doomscroll-block-images canvas {
+  display: none !important;
+}
+
+html.doomscroll-block-videos video,
+html.doomscroll-block-videos object,
+html.doomscroll-block-videos embed {
+  display: none !important;
+}
