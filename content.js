@@ -8,7 +8,8 @@ let settings = {
   shrinkMedia: false,
   blockAllMedia: false,
   blockImages: false,
-  blockVideos: false
+  blockVideos: false,
+  greyscale: false
 };
 
 let lastSoundTime = 0;
@@ -325,6 +326,7 @@ function applyBlockAllMedia() {
   root.classList.toggle('doomscroll-block-all-media', !!settings.blockAllMedia);
   root.classList.toggle('doomscroll-block-images', !!settings.blockImages);
   root.classList.toggle('doomscroll-block-videos', !!settings.blockVideos);
+  root.classList.toggle('doomscroll-greyscale', !!settings.greyscale);
 }
 
 async function init() {

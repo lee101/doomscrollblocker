@@ -155,3 +155,7 @@ html.doomscroll-block-videos object,
 html.doomscroll-block-videos embed {
   display: none !important;
 }
+
+html.doomscroll-greyscale {
+  filter: grayscale(1) !important;
+}

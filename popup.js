@@ -21,7 +21,8 @@ let settings = {
   shrinkMedia: false,
   blockAllMedia: false,
   blockImages: false,
-  blockVideos: false
+  blockVideos: false,
+  greyscale: false
 };
 
 async function loadSettings() {
@@ -61,7 +62,8 @@ function updateUI() {
   document.getElementById('blockAllMedia').checked = !!settings.blockAllMedia;
   document.getElementById('blockImages').checked = !!settings.blockImages;
   document.getElementById('blockVideos').checked = !!settings.blockVideos;
-  
+  document.getElementById('greyscale').checked = !!settings.greyscale;
+
   renderMainSites();
   renderCustomSites();
 }
@@ -246,6 +248,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('blockVideos').addEventListener('change', (e) => {
     settings.blockVideos = e.target.checked;
+    saveSettings();
+  });
+
+  document.getElementById('greyscale').addEventListener('change', (e) => {
+    settings.greyscale = e.target.checked;
     saveSettings();
   });
 });
